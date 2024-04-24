@@ -2,7 +2,7 @@ string webhook_url = "";
 
 integer flag = AGENT_LIST_REGION;
 integer time_event = 3;
-integer footer_agent_display = 20;
+integer footer_agent_display = 30;
 integer message_mode = 2;//1,2
 
 list privacy_zone =[];//"vector=radius=title"
@@ -165,7 +165,7 @@ visit_logs_send(string msg,integer mode)
     }
     if(mode == 2)
     {
-    detail0 = "Uuid : "+llList2String(items,3)+"\n"+"Spawn Position : "+llList2String(items,1)+"\n"+"Visit Time : "+getTime((integer)llList2String(items,4));
+    detail0 = "Uuid : "+llList2String(items,3)+"\n"+"Last Position : "+llList2String(items,1)+"\n"+"Visit Time : "+getTime((integer)llList2String(items,4));
     detail1 = "has left the sim";
     }
     list json =[
