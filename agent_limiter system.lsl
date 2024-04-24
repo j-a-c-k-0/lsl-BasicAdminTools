@@ -7,16 +7,8 @@ integer streamingwarning = 2500;
 integer scriptlimit = 500;
 integer scriptwarning = 400;
 integer event_timer = 3;
-integer relay = 35688;
+integer relay = 10;
 
-message(string message)
-{
-  list TempList = llGetAgentList(flag, []);
-  integer Length= llGetListLength(TempList);
-  if (!Length){ return; }else{integer x;for ( ; x < Length; x += 1)
-  {
-  llRegionSayTo(llList2String(TempList,x),0,message);   
-}}}
 graphics_agentleft() 
 {
 integer Length = llGetListLength(only_once1);     
@@ -63,31 +55,14 @@ graphics()
              if(llList2Integer(details,0)> streaminglimit)
              {
              only_once1 += llList2String(TempList, x)+"|"+llList2String(details,0); 
-             string username = llDeleteSubString(llList2String(details,2),30,1000000);   
-             message("secondlife:///app/agent/"+llList2String(TempList, x)+"/about"+" [ HIGH STREAMING_COST > "+(string)llList2Integer(details,0)+" ]");
-
-             llMessageLinked(3, 0,"[ Name "+username+" ]"+
-             "[ Uuid "+llList2String(TempList,x)+" ]"+"[ HIGH STREAMING_COST > "+(string)llList2Integer(details,0)+" ]","");
-
+             string username = llDeleteSubString(llList2String(details,2),30,1000000);
              llRegionSay(relay,"kick|"+llList2String(TempList, x)); 
 
-             list target =llGetLinkPrimitiveParams(2,[PRIM_DESC]);
-             if(llList2String(target,0) == "mode_1")
-             {    
-             llMessageLinked(2, 0,
+             llMessageLinked(LINK_THIS,5,
              "Name : "+username+"\n"+
              "Uuid : "+llList2String(TempList, x)+"\n"+
-             "HighStreamingCost : "+(string)llList2Integer(details,0)+"\n"+
-             "Posted : <t:"+(string)llGetUnixTime()+":R>","");
-             } 
-             if(llList2String(target,0) == "mode_2")
-             {    
-             llMessageLinked(2, 0,
-             llList2String(TempList, x)+"|"+
-             "HIGH STREAMING_COST > "+(string)llList2Integer(details,0)+"|"+username+"|"+
-             "Uuid : "+llList2String(TempList, x)+"\n"+
-             "Posted : <t:"+(string)llGetUnixTime()+":R>"+"|"+"alert","");
-} } } } } } }
+             "HighStreamingCost : "+(string)llList2Integer(details,0),"");
+} } } } } }
 script_agentleft() 
 {    
 integer Length = llGetListLength(only_once0);     
@@ -134,31 +109,14 @@ script()
              if(llList2Integer(details,1)> scriptlimit)
              {
              only_once0 += llList2String(TempList, x)+"|"+llList2String(details,1);
-             string username = llDeleteSubString(llList2String(details,2),30,1000000); 
-             message("secondlife:///app/agent/"+llList2String(TempList, x)+"/about"+" [ HIGH SCRIPT_COUNT > "+(string)llList2Integer(details,1)+" ]");
-
-             llMessageLinked(3, 0,"[ Name "+username+" ]"+"[ Uuid "+llList2String(TempList,x)+" ]"+
-             "[ HIGH SCRIPT_COUNT > "+(string)llList2Integer(details,1)+" ]","");
-
+             string username = llDeleteSubString(llList2String(details,2),30,1000000);
              llRegionSay(relay,"kick|"+llList2String(TempList, x));
-             
-             list target =llGetLinkPrimitiveParams(2,[PRIM_DESC]);
-             if(llList2String(target,0) == "mode_1")
-             {  
-             llMessageLinked(2, 0,
+ 
+             llMessageLinked(LINK_THIS,5,
              "Name : "+username+"\n"+
              "Uuid : "+llList2String(TempList, x)+"\n"+
-             "HighScriptCount : "+(string)llList2Integer(details,1)+"|"+
-             "Posted : <t:"+(string)llGetUnixTime()+":R>","");
-             }
-             if(llList2String(target,0) == "mode_2")
-             {
-             llMessageLinked(2, 0,
-             llList2String(TempList, x)+"|"+
-             "HIGH SCRIPT_COUNT > "+(string)llList2Integer(details,1)+"|"+username+"|"+
-             "Uuid : "+llList2String(TempList, x)+"\n"+
-             "Posted : <t:"+(string)llGetUnixTime()+":R>"+"|"+"alert","");
-} } } } } } }
+             "HighScriptCount : "+(string)llList2Integer(details,1),"");
+} } } } } }
 default
 {
     changed(integer change)
