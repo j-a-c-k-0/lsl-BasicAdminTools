@@ -3,7 +3,6 @@ string webhook_url = "";
 integer flag = AGENT_LIST_REGION;
 integer time_event = 3;
 integer footer_agent_display = 30;
-integer message_mode = 2;//1,2
 
 list privacy_zone =[];//"vector=radius=title"
 list known_list =[];
