@@ -1,12 +1,16 @@
 string webhook_url = "";
 
 integer flag = AGENT_LIST_REGION;
-integer time_event = 3;
 integer footer_agent_display = 30;
+integer time_event = 3;
 
 list privacy_zone =[];//"vector=radius=title"
 list known_list =[];
 
+string detect_bot(key avatar)
+{
+if(llGetAgentInfo(avatar) & AGENT_AUTOMATED){return "1";}return "0";
+}
 string A_status(key avatar)
 {
 //if(llGetAgentInfo(avatar) & AGENT_ON_OBJECT){list a = llGetObjectDetails(avatar,([OBJECT_ROOT]));return "sitting on "+llDeleteSubString(llKey2Name(llList2String(a,0)),25,1000000);}
@@ -50,10 +54,22 @@ data_delete(string a)
    }  
    llLinksetDataDeleteFound("temp","");
 }
-string detect_bot(key avatar)
+startup()
 {
-if(llGetAgentInfo(avatar) & AGENT_AUTOMATED){return "1";}
-return "0";
+    llLinksetDataReset();  
+    list List = llGetAgentList(flag,[]);
+    integer Length = llGetListLength(List);
+    if (!Length){return;}else{integer x;for ( ; x < Length; x += 1)
+    {
+    list details = llGetObjectDetails(llList2String(List,x),([OBJECT_NAME,OBJECT_POS]));
+    vector ovF = llList2Vector(details,1); float a = ovF.x; float b = ovF.y; float c = ovF.z;
+    string position = "("+ (string)((integer)a)+", "+(string)((integer)b)+", "+(string)((integer)c)+")";
+
+    string Name = llDeleteSubString(llList2String(details,0),30,1000000);
+    string Data = Name+"|"+position+"|"+detect_bot(llList2String(List,x))+"|"+llList2String(List,x)+"|"+(string)llGetUnixTime();
+    llLinksetDataWrite("data"+(string)llLinksetDataCountKeys(),Data);
+    }
+  }
 }
 integer data_check(string uuid)
 {
@@ -63,7 +79,7 @@ integer data_check(string uuid)
    { 
       string b = llLinksetDataRead("data"+(string)x);
       list items = llParseString2List(b,["|"],[]);
-      if(b == ""){data_delete("data"+(string)x);}else
+      if((key)llList2String(items,3))
       {
          if(uuid == llList2String(items,3))
          { 
@@ -73,6 +89,10 @@ integer data_check(string uuid)
          llLinksetDataWrite("data"+(string)x,llList2String(items,0)+"|"+position+"|"+detect_bot(uuid)+"|"+uuid+"|"+llList2String(items,4));
          return 1;
          }
+      }
+      else
+      {
+      data_delete("data"+(string)x);  
       }
    }return 0;
 }
@@ -100,19 +120,23 @@ agentleft()
   integer Length = llLinksetDataCountKeys();
   for ( ; x < Length; x += 1)
   { 
-    string b = llLinksetDataRead("data"+(string)x);
-    list items = llParseString2List(b,["|"],[]);
-    if(b == ""){data_delete("data"+(string)x);}else
-    {
-      vector agent = llGetAgentSize(llList2String(items,3));
-      if(agent){ }else
-      {  
-      integer time = (integer)llGetUnixTime() - llList2Integer(items,4);
-      string Data = llList2String(items,0)+"|"+llList2String(items,1)+"|"+llList2String(items,2)+"|"+llList2String(items,3)+"|"+(string)time;
-      visit_logs_send(Data,2); data_delete("data"+(string)x);
+      string b = llLinksetDataRead("data"+(string)x);
+      list items = llParseString2List(b,["|"],[]);
+      if((key)llList2String(items,3))
+      {
+        vector agent = llGetAgentSize(llList2String(items,3));
+        if(agent){ }else
+        {
+        integer time = (integer)llGetUnixTime() - llList2Integer(items,4);
+        string Data = llList2String(items,0)+"|"+llList2String(items,1)+"|"+llList2String(items,2)+"|"+llList2String(items,3)+"|"+(string)time;
+        visit_logs_send(Data,2); data_delete("data"+(string)x);
+        }
       }
-    }
-  }
+      else
+      {
+      data_delete("data"+(string)x);
+      }
+   }
 }
 string p_zone(string position,key ID)
 {
@@ -159,12 +183,19 @@ visit_logs_send(string msg,integer mode)
 
     if(mode == 1)
     {
-    detail0 = "Uuid : "+llList2String(items,3)+"\n"+"Spawn Position : "+llList2String(items,1);
+    detail0 =
+    "Uuid : "+llList2String(items,3)+"\n"+
+    "Spawn Position : "+llList2String(items,1
+    );
     detail1 = "has entered the sim";
     }
     if(mode == 2)
     {
-    detail0 = "Uuid : "+llList2String(items,3)+"\n"+"Last Position : "+llList2String(items,1)+"\n"+"Visit Time : "+getTime((integer)llList2String(items,4));
+    detail0 =
+    "Uuid : "+llList2String(items,3)+"\n"+
+    "Last Position : "+llList2String(items,1)+"\n"+
+    "Visit Time : "+getTime((integer)llList2String(items,4)
+    );
     detail1 = "has left the sim";
     }
     list json =[
@@ -202,7 +233,7 @@ default
     }
     state_entry()
     {
-    llLinksetDataReset();    
+    startup();
     llSetTimerEvent(time_event);
     }
     link_message(integer sender_num, integer num, string msg, key id)
@@ -211,7 +242,7 @@ default
     }
     timer()
     {
-    agententer(); 
+    agententer();
     agentleft();
     }
   }
